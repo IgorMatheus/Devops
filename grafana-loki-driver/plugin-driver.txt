@@ -1,0 +1,2 @@
+$ docker plugin install grafana/loki-docker-driver:main --alias loki --grant-all-permissions
+$ docker plugin ls

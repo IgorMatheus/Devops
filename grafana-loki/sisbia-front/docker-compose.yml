@@ -1,0 +1,19 @@
+version: '3.6'
+
+networks:
+  default:
+    name: sisbia
+
+services:
+  front:
+    container_name: sisbia-front
+    build: .
+    restart: always
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"

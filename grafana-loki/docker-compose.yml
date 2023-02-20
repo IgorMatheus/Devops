@@ -1,0 +1,19 @@
+version: "3.6"
+
+services:
+  grafana:
+    image: grafana/grafana:9.3.6-ubuntu
+    restart: always
+    ports:
+      - "3000:3000"
+
+  loki:
+    image: grafana/loki:main
+    restart: always
+
+  promtail:
+    image: grafana/promtail:main
+    restart: always
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - ./promtail-config.yaml:/etc/promtail/config.yml

@@ -1,0 +1,3 @@
+# PEGAR AS INFORMAÇÕES DO ACCESS_KEY NO IAM DA AWS E EXPORTAR PARA A MÁQUINA QUE FARÁ ACESSO À PLATAFOMA DA AWS
+export AWS_ACCESS_KEY_ID=F******************H
+export AWS_SECRET_ACCESS_KEY=s**************************************9
