@@ -1,0 +1,149 @@
+- name: Playbook Caravel + SSL + Monitoramento
+  hosts: DR-AL
+  user: "{{ SERVER_USER }}"
+#  gather_facts: no
+  tasks:
+   - name: Update Packages
+     become: true
+     become_user: root
+     apt:
+       update_cache: yes
+   - name: DOCKER - prerequisite packages 
+     become: true
+     become_user: root
+     ansible.builtin.package:
+       name:
+         - apt-transport-https
+         - ca-certificates
+         - curl
+         - software-properties-common
+       state: latest
+   - name: DOCKER - Add Docker’s official GPG key
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+       add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+   - name: Update Packages
+     become: true
+     become_user: root
+     apt:
+       update_cache: yes
+   - name: DOCKER - Installation
+     become: true
+     become_user: root
+     ansible.builtin.package:
+       name:
+         - docker-ce
+   - name: DOCKER - Add user to docker group
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       sudo "{{ SERVER_USER }}"
+       usermod -aG docker "{{ SERVER_USER }}"
+   - name: DOCKER-COMPOSE - Installation version 2.3.3
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       mkdir -p ~/.docker/cli-plugins/
+       curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+       chmod +x ~/.docker/cli-plugins/docker-compose
+       cp ~/.docker/cli-plugins/docker-compose /usr/bin
+   - name: DOCKER-COMPOSE - Copy Dataraft Project
+     ansible.builtin.copy:
+       src: "{{ LOCAL_PATH }}"
+       dest: "{{ REMOTE_PATH }}"
+   - name: DOCKER SWARM - Initialize a swarm
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       docker swarm init --advertise-addr {{ SERVER_IP }}
+   - name: DOCKER NETWORK - Creating the network connection between the containers
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       docker network create --driver overlay --attachable dataraft
+   - name: DOCKER LOGIN - Connecting to registry
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       docker login {{ REGISTRY_URL }} --username {{ REGISTRY_USERNAME }} --password {{ REGISTRY_PASSWORD }}
+   - name: DOCKER PLUGIN - Installing plugin Loki
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       docker plugin install grafana/loki-docker-driver:main-7d67b63 --alias loki --grant-all-permissions
+   - name: DOCKER-COMPOSE - Starting Portainer Container
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ PORTAINER_PATH }}
+       docker-compose up -d
+   - name: SYSTEM - Additional packages
+     become: true
+     become_user: root
+     ansible.builtin.package:
+       name:
+         - httpie
+         - jq
+       state: latest
+   - name: DOCKER VOLUME - Creating all necessary volumes
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       docker volume create nginx_config
+       docker volume create certbot_conf
+       docker volume create certbot_www
+       docker volume create prometheus_config
+       docker volume create prometheus_data
+       docker volume create grafana_config
+       docker volume create grafana_data
+       docker volume create loki_config
+       docker volume create loki_data
+       docker volume create alertmanager_config
+       docker volume create alertmanager_data
+   - name: DOCKER VOLUME - Copying config files to volumes
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cp {{ NGINX_PATH }}/default.conf /var/lib/docker/volumes/nginx_config/_data/
+   - name: PORTAINER - Getting auth token
+     become: true
+     become_user: root
+     register: PORTAINER_TOKEN
+     ansible.builtin.shell: |
+       http POST localhost:9000/api/auth Username="admin" Password="tecnicamenteperfeita" | jq -r .jwt
+   - name: DOCKER INFO - Getting Cluster ID
+     become: true
+     become_user: root
+     register: CLUSTER_ID
+     ansible.builtin.shell: |
+       docker info | grep -i clusterid | awk '{print $2}'
+   - name: PORTAINER  API - Create a new environment(endpoint)
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       http --verify=no --form POST https://localhost:9443/api/endpoints "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" Name=DATARAFT EndpointCreationType=1
+   - name: PORTAINER  API - Deploy Nginx Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ NGINX_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Nginx SwarmID={{ CLUSTER_ID.stdout }}
+
+
+
+#   - name: DOCKER-COMPOSE CERTOB - Requesting SSL
+#     become: true
+#     become_user: root
+#     ansible.builtin.shell: |
+#       cd {{ NGINX_PATH }}
+#       docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d {{ base_url }}
+#       #       docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d {{ base_url }}
+#   - name: DOCKER-COMPOSE - Changing default.conf to use HTTPS
+#     become: true
+#     become_user: root
+#     ansible.builtin.shell: |
+#       cd {{ NGINX_PATH }}
+#       mv default.conf.https default.conf
+#       docker-compose restart proxy_reverso
