@@ -1,0 +1,51 @@
+## http - Adicionar senha para conta admin ##
+http POST 10.83.11.39:9000/api/users/admin/init Username="admin" Password="tecnicamenteperfeita"
+
+## http - Getting Auth Token ##
+http POST 10.83.11.39:9000/api/users/admin/init Username="admin" Password="tecnicamenteperfeita"
+
+## http - Getting Auth Token ##
+http POST localhost:9000/api/auth Username="admin" Password="tecnicamenteperfeita"
+
+## curl - Getting Auth Token ##
+curl -X POST http://localhost:9000/api/auth --data '{"username":"admin","password":"tecnicamenteperfeita"}'
+curl -X POST http://localhost:9000/api/auth --header 'Content-Type: application/json' --data '{"username":"admin","password":"tecnicamenteperfeita"}'
+
+## curl - Create container ##
+http POST localhost:9000/api/endpoints/2/docker/containers/create "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOjEsInNjb3BlIjoiZGVmYXVsdCIsImZvcmNlQ2hhbmdlUGFzc3dvcmQiOmZhbHNlLCJleHAiOjE2ODk2MjY3OTksImlhdCI6MTY4OTU5Nzk5OX0.axuKMoK4Pk0kJlg-I4QO5-kzZetf8vWZapD5dnJ96X4" name=="web01" Image="nginx" ExposedPorts:='{ "80/tcp": {} }' HostConfig:='{ "PortBindings": { "80/tcp": [{ "HostPort": "8080" }] } }'
+
+## curl - Create container ##
+curl -X POST localhost:9000/api/endpoints/2/docker/containers/create --header "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOjEsInNjb3BlIjoiZGVmYXVsdCIsImZvcmNlQ2hhbmdlUGFzc3dvcmQiOmZhbHNlLCJleHAiOjE2ODk2MjY3OTksImlhdCI6MTY4OTU5Nzk5OX0.axuKMoK4Pk0kJlg-I4QO5-kzZetf8vWZapD5dnJ96X4" --header "Content-Type: application/json" --data '{"name":"web02", "image":"nginx"}'
+
+## curl -  Criar stack através de arquivo json ## NÃO TESTADO
+curl -X POST http://...  --header "Authorization: Bearer ... " --data "@test.json"
+
+## http - Criar STACK via yaml file - Stack tipo 2 (compose) ##
+http --verify=no --form POST https://localhost:9443/api/stacks "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOjEsInNjb3BlIjoiZGVmYXVsdCIsImZvcmNlQ2hhbmdlUGFzc3dvcmQiOmZhbHNlLCJleHAiOjE2ODk2MjY3OTksImlhdCI6MTY4OTU5Nzk5OX0.axuKMoK4Pk0kJlg-I4QO5-kzZetf8vWZapD5dnJ96X4" type=2 method=file file@monitoramento.yaml endpointId=2 Name=Monitoramento
+
+## http - Criar STACK via yaml file - Stack tipo 1 (Swarm) - SwarmID é o ID do cluster ##
+http --verify=no --form POST https://localhost:9443/api/stacks "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOjEsInNjb3BlIjoiZGVmYXVsdCIsImZvcmNlQ2hhbmdlUGFzc3dvcmQiOmZhbHNlLCJleHAiOjE2ODk2MjY3OTksImlhdCI6MTY4OTU5Nzk5OX0.axuKMoK4Pk0kJlg-I4QO5-kzZetf8vWZapD5dnJ96X4" type=1 method=file file@monitoramento.yaml endpointId=2 Name=Monitoramento SwarmID=iurk1um9r96o0r3bn1ymukr80
+
+## http - Listar as stack existentes ##
+http --form GET http://localhost:9000/api/stacks "Authorization: Bearer $PORTAINER_TOKEN" 
+
+## http - listar informaçõeas do Swarm ##
+http GET http://localhost:9000/api/endpoints/2/docker/swarm "Authorization: Bearer $PORTAINER_TOKEN"
+
+## http -  Create a new environment(endpoint)##
+http --verify=no --form POST https://localhost:9443/api/endpoints "Authorization: Bearer $PORTAINER_TOKEN" Name=Local EndpointCreationType=1
+curl -X POST -k https://localhost:9443/api/endpoints -H "Authorization: Bearer $PORTAINER_TOKEN" -d 'Name=Server&EndpointCreationType=1'
+
+## http -  Deploy Stack##
+http --verify=no --form POST https://localhost:9443/api/stacks "Authorization: Bearer $PORTAINER_TOKEN" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Nginx SwarmID=$CLUSTER_ID
+
+## http - list stack ##
+http --verify=no --form GET https://localhost:9443/api/stacks "Authorization: Bearer $PORTAINER_TOKEN"
+
+export PORTAINER_TOKEN=$(http POST localhost:9000/api/auth Username="admin" Password="tecnicamenteperfeita" | jq -r .jwt)
+
+export CLUSTER_ID=$(docker info | grep -i clusterid | awk '{print $2}')
+
+time ansible-playbook -i inventory playbook_dataraft.yaml --key-file ~/Downloads/testePlaybook.pem -v
+
+curl --request POST --insecure https://localhost:9443/api/registries --header "Authorization: Bearer $PORTAINER_TOKEN" --data '{"type":3, "name":"Senai", "url":"https://registry.al.senai.br", "authentication":true, "username":"ntmsenai", "password":"R3G1str3r@432172#S3N4!"}'

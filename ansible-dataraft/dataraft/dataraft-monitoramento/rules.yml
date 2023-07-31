@@ -1,0 +1,48 @@
+groups:
+- name: HOST
+
+  rules:
+# MEMORY FREE SPACE
+  - alert: Host_Free_Memory
+    expr: ((node_memory_MemAvailable_bytes{instance="node-exporter:9100",job="node-exporter"}) / (node_memory_MemTotal_bytes{instance="node-exporter:9100",job="node-exporter"}) * 100) < 10
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "Host free memory is below 10%\n VALUE = {{ $value }}\n LABELS = {{ $labels }}"
+
+# MEMORY USAGE
+  - alert: Host_Memory_Usage
+    expr: (100 - sum((node_memory_MemAvailable_bytes) / (node_memory_MemTotal_bytes) * 100) by (instance,job)) > 90
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "Host MEMORY usage is above 90%\n VALUE = {{ $value }}%\n LABELS = {{ $labels }}"
+
+# CPU USAGE
+  - alert: Host_CPU_Usage 
+    expr: (100 - avg(rate(node_cpu_seconds_total{mode="idle"}[30s])*100) by (instance,job)) > 90
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "Host CPU usage is above 90%\n VALUE = {{ $value }}%\n LABELS = {{ $labels }}"
+
+# DISK USAGE
+  - alert: Host_Disk_Usage
+    expr: (100 - (node_filesystem_avail_bytes {device="/dev/nvme0n1p3",fstype!="rootfs"} / node_filesystem_size_bytes {device="/dev/nvme0n1p3",fstype!="rootfs"}) * 100) > 85
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "Host DISK usage is above 90%\n VALUE = {{ $value }}%\n LABELS = {{ $labels }}"
+
+# CONTAINER DOWN -- Após 5 minutos (300 segundos) de inatividade o container não é mais monitorado pelo alertmanager
+  - alert: Container_healthy
+    expr:  (time() - last_over_time(container_last_seen[24h])) > 60
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "Container is down\n LABELS = {{ $labels.name }}"

@@ -63,16 +63,44 @@
      become_user: root
      ansible.builtin.shell: |
        docker network create --driver overlay --attachable dataraft
-   - name: DOCKER LOGIN - Connecting to registry
-     become: true
-     become_user: root
-     ansible.builtin.shell: |
-       docker login {{ REGISTRY_URL }} --username {{ REGISTRY_USERNAME }} --password {{ REGISTRY_PASSWORD }}
    - name: DOCKER PLUGIN - Installing plugin Loki
      become: true
      become_user: root
      ansible.builtin.shell: |
        docker plugin install grafana/loki-docker-driver:main-7d67b63 --alias loki --grant-all-permissions
+   - name: DOCKER VOLUME - Creating all necessary volumes
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       docker volume create portainer_data
+       docker volume create postgres_data
+       docker volume create caravel_models
+       docker volume create caravel_storage
+       docker volume create minio_data
+       docker volume create jupyter_data
+       docker volume create airflow_postgres_db_volume
+       docker volume create airflow_data
+       docker volume create prometheus_config
+       docker volume create prometheus_data
+       docker volume create grafana_config
+       docker volume create grafana_data
+       docker volume create loki_config
+       docker volume create loki_data
+       docker volume create alertmanager_config
+       docker volume create alertmanager_data
+       docker volume create nginx_config
+       docker volume create certbot_conf
+       docker volume create certbot_www
+   - name: DOCKER VOLUME - Copying config files to volumes
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cp {{ MONITORING_PATH }}/prometheus.yml /var/lib/docker/volumes/prometheus_config/_data/
+       cp {{ MONITORING_PATH }}/rules.yml /var/lib/docker/volumes/prometheus_config/_data/
+       cp {{ MONITORING_PATH }}/loki-config.yml /var/lib/docker/volumes/loki_config/_data/
+       cp {{ MONITORING_PATH }}/alertmanager.yml /var/lib/docker/volumes/alertmanager_config/_data/
+       cp {{ NGINX_PATH }}/default.conf.http /var/lib/docker/volumes/nginx_config/_data/
+       cp {{ NGINX_PATH }}/default.conf.https /var/lib/docker/volumes/nginx_config/_data/
    - name: DOCKER-COMPOSE - Starting Portainer Container
      become: true
      become_user: root
@@ -87,27 +115,7 @@
          - httpie
          - jq
        state: latest
-   - name: DOCKER VOLUME - Creating all necessary volumes
-     become: true
-     become_user: root
-     ansible.builtin.shell: |
-       docker volume create nginx_config
-       docker volume create certbot_conf
-       docker volume create certbot_www
-       docker volume create prometheus_config
-       docker volume create prometheus_data
-       docker volume create grafana_config
-       docker volume create grafana_data
-       docker volume create loki_config
-       docker volume create loki_data
-       docker volume create alertmanager_config
-       docker volume create alertmanager_data
-   - name: DOCKER VOLUME - Copying config files to volumes
-     become: true
-     become_user: root
-     ansible.builtin.shell: |
-       cp {{ NGINX_PATH }}/default.conf /var/lib/docker/volumes/nginx_config/_data/
-   - name: PORTAINER - Getting auth token
+   - name: PORTAINER API - Getting auth token
      become: true
      become_user: root
      register: PORTAINER_TOKEN
@@ -124,26 +132,77 @@
      become_user: root
      ansible.builtin.shell: |
        http --verify=no --form POST https://localhost:9443/api/endpoints "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" Name=DATARAFT EndpointCreationType=1
-   - name: PORTAINER  API - Deploy Nginx Stack
+   - name: PORTAINER  API - Connecting to private registry
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       curl --request POST --insecure https://localhost:9443/api/registries --header "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" --data '{"type":3, "authentication":true, "name":"{{ REGISTRY_NAME }}", "url":"{{ REGISTRY_URL }}", "username":"{{ REGISTRY_USERNAME }}", "password":"{{ REGISTRY_PASSWORD }}"}'
+   - name: PORTAINER API - Deploy Postgres Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ POSTGRES_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Postgres SwarmID={{ CLUSTER_ID.stdout }}
+   - name: PORTAINER API - Deploy Adminer Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ ADMINER_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Adminer SwarmID={{ CLUSTER_ID.stdout }}
+   - name: PORTAINER API - Deploy Caravel Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ CARAVEL_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Caravel SwarmID={{ CLUSTER_ID.stdout }}
+   - name: PORTAINER API - Deploy Minio Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ MINIO_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Minio SwarmID={{ CLUSTER_ID.stdout }}
+   - name: PORTAINER API - Deploy Jupyter Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ JUPYTER_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Jupyter SwarmID={{ CLUSTER_ID.stdout }}
+   - name: PORTAINER API - Deploy Airflow Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ AIRFLOW_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Airflow SwarmID={{ CLUSTER_ID.stdout }}
+   - name: PORTAINER API - Deploy Monitoring Stack
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ MONITORING_PATH }}
+       http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Monitoramento SwarmID={{ CLUSTER_ID.stdout }}
+   - name: NGINX - default.conf ### DEPURAR ERRO - airflow-webserver não subiu corretamente. Assim, o Nginx falhou na inicialização ###
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd /var/lib/docker/volumes/nginx_config/_data/
+       cat default.conf.http >| default.conf
+   - name: PORTAINER API - Deploy Nginx Stack
      become: true
      become_user: root
      ansible.builtin.shell: |
        cd {{ NGINX_PATH }}
        http --form POST http://localhost:9000/api/stacks "Authorization: Bearer {{ PORTAINER_TOKEN.stdout }}" type=1 method=file file@docker-compose.yaml endpointId=1 Name=Nginx SwarmID={{ CLUSTER_ID.stdout }}
-
-
-
-#   - name: DOCKER-COMPOSE CERTOB - Requesting SSL
-#     become: true
-#     become_user: root
-#     ansible.builtin.shell: |
-#       cd {{ NGINX_PATH }}
-#       docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d {{ base_url }}
-#       #       docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d {{ base_url }}
-#   - name: DOCKER-COMPOSE - Changing default.conf to use HTTPS
-#     become: true
-#     become_user: root
-#     ansible.builtin.shell: |
-#       cd {{ NGINX_PATH }}
-#       mv default.conf.https default.conf
-#       docker-compose restart proxy_reverso
+   - name: CERTBOT - Requesting SSL
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd {{ NGINX_PATH }}
+       docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d {{ base_url }}
+       #       docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d {{ base_url }}
+   - name: NGINX - Changing default.conf to use HTTPS
+     become: true
+     become_user: root
+     ansible.builtin.shell: |
+       cd /var/lib/docker/volumes/nginx_config/_data/
+       cat default.conf.https >| default.conf
+       cd {{ NGINX_PATH }}
+       docker-compose restart proxy_reverso

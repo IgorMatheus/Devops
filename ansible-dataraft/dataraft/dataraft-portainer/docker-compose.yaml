@@ -1,0 +1,27 @@
+version: '3.9'
+
+volumes:
+  portainer_data:
+    external: true
+
+networks:
+  dataraft:
+    external: true
+    #    driver: overlay
+    #    attachable: true
+
+services:
+  portainer:
+    image: portainer/portainer-ce:2.16.2
+    command: --admin-password='$$2a$$12$$UorcGBVcTJkwAZ0PPwxxQegYbAWnZS5vDCPpSp8y4Hijp2ornGFU.'
+    container_name: portainer
+    restart: always
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - dataraft

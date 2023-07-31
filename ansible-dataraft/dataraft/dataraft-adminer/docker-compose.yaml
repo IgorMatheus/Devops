@@ -1,0 +1,15 @@
+version: '3.9'
+
+networks:
+  dataraft:
+    external: true
+
+services:
+  adminer:
+    image: adminer:4.8.1
+#    ports:
+#      - 8080:8080
+    networks:
+      - dataraft
+    environment:
+      - ADMINER_DESIGN=dracula

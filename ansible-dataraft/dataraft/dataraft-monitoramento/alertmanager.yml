@@ -1,0 +1,21 @@
+route:
+  receiver: 'mail'
+  repeat_interval: 1h
+  group_by: ['AlertContainers']
+
+receivers:
+#  - name: 'mail'
+#    email_configs:
+#      - smarthost: 'smtp.gmail.com:587'
+#        auth_username: 'apptestesenai@gmail.com'
+#        auth_password: 'Senha@123'
+#        from: 'apptestesenai@gmail.com'
+#        to: 'igor.mbm@hotmail.com'
+
+  - name: 'mail'
+    email_configs:
+      - smarthost: 'smtp.office365.com:587'
+        auth_username: 'hub.sd@al.senai.br'
+        auth_password: "Vaw61323"
+        from: 'hub.sd@al.senai.br'
+        to: 'igor.mbm@hotmail.com'

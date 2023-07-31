@@ -1,0 +1,96 @@
+version: "3.9"
+
+networks:
+  dataraft:
+    external: true
+
+volumes:
+  prometheus_config:
+    external: true
+  prometheus_data:
+    external: true
+  grafana_config:
+    external: true
+  grafana_data:
+    external: true
+  loki_config:
+    external: true
+  loki_data:
+    external: true
+  alertmanager_config:
+    external: true
+  alertmanager_data:
+    external: true
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.42.0
+    volumes:
+      - prometheus_config:/etc/prometheus
+      - prometheus_data:/prometheus
+#    ports:
+#      - 9090:9090
+    networks:
+      - dataraft
+
+  grafana:
+    image: grafana/grafana:9.3.6
+    environment:
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+#    ports:
+#      - 3001:3000
+    volumes:
+      - grafana_config:/etc/grafana
+      - grafana_data:/var/lib/grafana
+    networks:
+      - dataraft
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+#    ports:
+#      - 8080:8080
+    networks:
+      - dataraft
+
+  node-exporter:
+    image: prom/node-exporter:v1.5.0
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - dataraft
+
+  loki:
+    image: grafana/loki:2.8.0
+    command:
+     - -config.file=/etc/loki/loki-config.yml
+#    ports:
+#     - "3100:3100"
+    volumes:
+      - loki_config:/etc/loki
+      - loki_data:/loki
+    networks:
+     - dataraft
+
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    command: --config.file=/config/alertmanager.yml --log.level=debug
+#    ports:
+#      - "9093:9093"
+    volumes:
+      - alertmanager_config:/config
+      - alertmanager_data:/data
+    networks:
+     - dataraft
+

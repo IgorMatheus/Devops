@@ -1,0 +1,39 @@
+version: '3.9'
+
+networks:
+  dataraft:
+    external: true
+
+volumes:
+  nginx_config:
+    external: true
+  certbot_www:
+    external: true
+  certbot_conf:
+    external: true
+
+services:
+  proxy_reverso:
+    image: nginx:1.24.0-alpine3.17-slim
+    restart: always
+    volumes:
+      - nginx_config:/etc/nginx/conf.d
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - dataraft
+
+  certbot:
+    image: certbot/certbot
+    volumes: 
+      - certbot_www:/var/www/certbot/:rw
+      - certbot_conf:/etc/letsencrypt/:rw
+    networks:
+      - dataraft

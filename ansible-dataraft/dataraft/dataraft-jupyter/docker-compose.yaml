@@ -1,0 +1,23 @@
+version: '3.9'
+ 
+networks:
+  dataraft:
+    external: true
+
+volumes:
+  jupyter_data:
+    external: true
+
+services:
+  jupyter:
+    image: jupyter/pyspark-notebook
+    command: start.sh jupyter lab --LabApp.base_url=/jupyter/ --LabApp.token='zKMbj*Z0s!eS00V8bCvB'
+    user: root
+    volumes:
+      - jupyter_data:/home/jovyan/work
+    networks:
+      - dataraft
+#    ports:
+#      - 8889:8888
+    environment:
+      - GRANT_SUDO=yes

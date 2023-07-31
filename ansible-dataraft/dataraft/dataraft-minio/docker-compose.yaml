@@ -1,0 +1,27 @@
+version: '3.9'
+
+networks:
+  dataraft:
+    external: true
+
+volumes:
+  minio_data:
+    external: true
+
+services:
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - dataraft
+#    ports:
+#      - 9999:9000
+#      - 9991:9001
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=e8ttFqPxDRzHig3Ex08jZtihn7TX1kIiATddWuhRYTQ=
+      - MINIO_BROWSER_REDIRECT_URL=http://0.0.0.0:9001/minio/
+#      - MINIO_SERVER_URL: http://0.0.0.0:9000/
+#      - DOMAIN: http://0.0.0.0:9000/minio/

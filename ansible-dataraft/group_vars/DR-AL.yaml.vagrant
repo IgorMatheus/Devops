@@ -1,0 +1,31 @@
+## Usuário de acesso ao servidor para execução do Playbook ##
+SERVER_USER: "vagrant"
+
+## IP do servidor ##
+SERVER_IP: 10.83.11.34
+
+## Caminho local para o diretório da stack ##
+LOCAL_PATH: ./dataraft
+
+## Caminho remoto para o diretório onde será copiado a stack ##
+REMOTE_PATH: /home/vagrant/projetos
+
+## Caminho para as stacks
+PORTAINER_PATH: /home/vagrant/projetos/dataraft/dataraft-portainer
+POSTGRES_PATH: /home/vagrant/projetos/dataraft/dataraft-postgres
+ADMINER_PATH: /home/vagrant/projetos/dataraft/dataraft-adminer
+CARAVEL_PATH: /home/vagrant/projetos/dataraft/dataraft-caravel
+MINIO_PATH: /home/vagrant/projetos/dataraft/dataraft-minio
+JUPYTER_PATH: /home/vagrant/projetos/dataraft/dataraft-jupyter
+AIRFLOW_PATH: /home/vagrant/projetos/dataraft/dataraft-airflow
+MONITORING_PATH: /home/vagrant/projetos/dataraft/dataraft-monitoramento
+NGINX_PATH: /home/vagrant/projetos/dataraft/dataraft-nginx
+
+## Credenciais de acesso ao Registry ##
+REGISTRY_NAME: Registry-AL
+REGISTRY_URL: https://registry.al.senai.br
+REGISTRY_USERNAME: 
+REGISTRY_PASSWORD: 
+
+## Especificar o domínio (com acesso externo) já apontado para o servidor ##
+BASE_URL: dw.al.senai.br

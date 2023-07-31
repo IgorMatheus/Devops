@@ -1,0 +1,32 @@
+version: '3.9'
+
+networks:
+  dataraft:
+    external: true
+
+volumes:
+  postgres_data:
+    external: true
+
+services:
+  postgres:
+    image: postgres:12
+    restart: always
+#    user: postgres
+#     secrets:
+#       - postgres-password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dataraft
+    environment:
+      - POSTGRES_DB=testeenv
+      - POSTGRES_PASSWORD=Senha@123
+      - POSTGRES_USERNAME=postgresdb

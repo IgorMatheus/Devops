@@ -1,0 +1,74 @@
+version: '3.9'
+
+networks:
+  dataraft:
+    external: true
+
+volumes:
+  caravel_models:
+    external: true
+  caravel_storage:
+    external: true
+
+services:
+  caravel:
+    image: registry.al.senai.br/datalake/caravel:4691
+    command: sh entrypoint.sh
+    restart: always
+    volumes:
+      - caravel_models:/app/caravel/modules/data_search/models
+      - caravel_storage:/app/caravel/storage
+    logging:
+      driver: loki
+      options: 
+        loki-url: "http://loki:3100/loki/api/v1/push"
+    networks:
+      - dataraft
+    environment:
+      # API ENVIRONMENT
+      - API_PORT=8000
+      - API_HOST=0.0.0.0
+      - API_DEFAULT_LIMIT=100
+      - API_MAX_LIMIT=10000
+      - API_STORAGE_PATH=/home/user/hml/caravel/caravel-storage
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=admin
+      - ADMIN_EMAIL=admin@caravel.com
+
+      # BOT TELEGRAM ENVIRONMENTS
+      - TOKEN_BOT=<ID_BOT>:<token>
+      - CHAT_ID=-1001917393330
+      - SEND_NOTIFICATION_BOT=False
+
+      # AUTHENTICATION SECURITY ENVIRONMENTS
+      - JWT_SECRET_KEY=caravel
+      - JWT_REFRESH_SECRET_KEY=caravel
+      - JWT_ALGORITHM=HS256
+
+      # APPLICATION DATABASE ENVIRONMENTS
+      - DB_TYPE=mysql+pymysql
+      - DB_HOST=mysql
+      - DB_DATABASE=caravel
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=RootCaravelRoot
+      - DB_DRIVER=
+      - DB_SCHEMA=
+
+      # CLIENT DATABASE ENVIRONMENTS
+      # compliance
+      # - CLIENT_DB_DATABASE=
+      # - CLIENT_DB_USER=
+      # - CLIENT_DB_HOST=
+      # - CLIENT_DB_PASSWORD=
+      # - CLIENT_DB_PORT=1433
+      
+      # CORPORERM
+      #      - CLIENT_DB_DATABASE=
+      #      - CLIENT_DB_USER=
+      #      - CLIENT_DB_HOST=
+      #      - CLIENT_DB_PASSWORD=
+      #      - CLIENT_DB_PORT=1433
+      
+      - CLIENT_DB_TYPE=mssql+pyodbc
+      - CLIENT_DB_DRIVER=ODBC+Driver+17+for+SQL+Server
