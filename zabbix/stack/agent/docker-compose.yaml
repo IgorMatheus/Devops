@@ -1,0 +1,19 @@
+version: '3.9' 
+
+#networks:
+#  proxy:
+#    - name: proxy
+#    - external: true
+
+services:
+  agent:
+    image: zabbix/zabbix-agent:latest
+    environment:
+      ZBX_HOSTNAME: 'agent-test' # qual a finalidade dessa env?
+      ZBX_SERVER_HOST: '10.0.0.4'  # IP do servidor zabbix
+      ZBX_SERVER_PORT: '10051'
+      ZBX_SERVER_ACTIVE: '10.0.0.4'
+    ports:
+      - "10050:10050"
+#    networks:
+#      - proxy
