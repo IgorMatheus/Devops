@@ -6,28 +6,28 @@ networks:
     external: true
 
 services:
-  postgres:
-    image: postgres:alpine3.20
+  mysql:
+    image: mysql:8.3
     environment:
-      POSTGRES_USER: 'zabbix'
-      POSTGRES_PASSWORD: 'zabbix'
-      POSTGRES_DB: 'zabbix'
+      MYSQL_DATABASE: 'zabbix'
+      MYSQL_USER: 'zabbix'
+      MYSQL_PASSWORD: 'zabbiz'
+      MYSQL_ROOT_PASSWORD: 'zabbix'
+
 
   server:
-    image: zabbix/zabbix-server-pgsql:latest
+    image: zabbix/zabbix-server-mysql:latest
     environment:
-      DB_SERVER_HOST: 'postgres'
-      POSTGRES_USER: 'zabbix'
-      POSTGRES_PASSWORD: 'zabbix'
-      POSTGRES_DB: 'zabbix'
+      DB_SERVER_HOST: 'mysql'
+      MYSQL_USER: 'zabbix'
+      MYSQL_PASSWORD: 'zabbix'
     ports:
       - "10051:10051"
 
   web:
-    image: zabbix/zabbix-web-nginx-pgsql:latest
+    image: zabbix/zabbix-web-nginx-mysql:latest
     environment:
       DB_SERVER_HOST: 'postgres'
-      POSTGRES_USER: 'zabbix'
       POSTGRES_PASSWORD: 'zabbix'
       POSTGRES_DB: 'zabbix'
       ZBX_SERVER_HOST: 'server'
