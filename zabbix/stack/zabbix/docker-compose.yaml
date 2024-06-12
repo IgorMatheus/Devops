@@ -6,40 +6,49 @@ networks:
     external: true
 
 services:
-  postgres:
-    image: postgres:alpine3.20
+  mysql:
+    image: mysql:8.3
     environment:
-      POSTGRES_USER: 'zabbix'
-      POSTGRES_PASSWORD: 'zabbix'
-      POSTGRES_DB: 'zabbix'
+      MYSQL_DATABASE: 'zabbix'
+      MYSQL_USER: 'zabbix'
+      MYSQL_PASSWORD: 'zabbix'
+      MYSQL_ROOT_PASSWORD: 'zabbix'
 
   server:
-    image: zabbix/zabbix-server-pgsql:latest
+    image: zabbix/zabbix-server-mysql:7.0.0-alpine
+#    image: zabbix/zabbix-server-mysql:latest
+#    command: ['sh', '-c', 'sleep infinity']
     environment:
-      DB_SERVER_HOST: 'postgres'
-      POSTGRES_USER: 'zabbix'
-      POSTGRES_PASSWORD: 'zabbix'
-      POSTGRES_DB: 'zabbix'
+      DB_SERVER_DBNAME: 'zabbix'
+      DB_SERVER_HOST: 'mysql'
+      DB_SERVER_PORT: '3306'
+      DB_SERVER_SCHEMA: 'zabbix'
+      MYSQL_USER: 'zabbix'
+      MYSQL_PASSWORD: 'zabbix'
+      MYSQL_DATABASE: 'zabbix'
     ports:
       - "10051:10051"
 
   web:
-    image: zabbix/zabbix-web-nginx-pgsql:latest
+    image: zabbix/zabbix-web-nginx-mysql:7.0.0-alpine
+#    image: zabbix/zabbix-web-nginx-mysql:latest
     environment:
-      DB_SERVER_HOST: 'postgres'
-      POSTGRES_USER: 'zabbix'
-      POSTGRES_PASSWORD: 'zabbix'
-      POSTGRES_DB: 'zabbix'
+      DB_SERVER_DBNAME: 'zabbix'
+      DB_SERVER_HOST: 'mysql'
+      DB_SERVER_PORT: '3306'
+      MYSQL_USER: 'zabbix'
+      MYSQL_PASSWORD: 'zabbix'
       ZBX_SERVER_HOST: 'server'
       PHP_TZ: 'America/Maceio'
 #    ports:
 #      - "80:8080"
 
   agent:
+#    image: zabbix/zabbix-agent:7.0.0-alpine
     image: zabbix/zabbix-agent:latest
     environment:
       ZBX_HOSTNAME: 'zabbixserver' #Esta env configura a opção HOSTNAME no zabbix_agentd.conf
       ZBX_SERVER_HOST: 'server'
       ZBX_SERVER_PORT: '10051'
-      ZBX_SERVER_ACTIVE: 'server'
-#      ZBX_HOSTINTERFACE: 'agent'
+#      ZBX_ACTIVESERVERS: 'server:10051'
+#      ZBX_HOSTINTERFACE: 'zabbixserver'
