@@ -13,8 +13,9 @@ services:
       POSTGRES_PASSWORD: 'zabbix'
       POSTGRES_DB: 'zabbix'
 
-  server:
+  server2:
     image: zabbix/zabbix-server-pgsql:latest
+    command: ['sh', '-c', 'sleep infinity']
     environment:
       DB_SERVER_DBNAME: 'zabbix'
       DB_SERVER_HOST: 'postgres'
@@ -23,8 +24,8 @@ services:
       POSTGRES_USER: 'zabbix'
       POSTGRES_PASSWORD: 'zabbix'
       POSTGRES_DB: 'zabbix'
-    ports:
-      - "10051:10051"
+#    ports:
+#      - "10051:10051"
 
   web:
     image: zabbix/zabbix-web-nginx-pgsql:latest
