@@ -3,3 +3,8 @@
 - Configurar comunicação dos Agents com o Server via Hostname e não IP
 - Analisar tamnha de arquivo para importação
 - Coletar métricas do docker
+
+
+#### Anotações ####
+- Importar Templates: Escolher as regras "Template groups" e "Templates" para as opções "Update existing" e "Create new".
+- Importar Hosts: Escolher as regras "Host groups" e "Hosts" para as opções "Update existing" e "Create new".
