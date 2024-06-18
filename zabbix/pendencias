@@ -1,10 +1,11 @@
 - Configurar no path /zabbix
 - Configurar nginx com upstream para não quebrar quando perder conexão com os locations
 - Configurar comunicação dos Agents com o Server via Hostname e não IP
-- Analisar tamnha de arquivo para importação
 - Coletar métricas do docker
+- Alterar configuração para Apache
 
 
 #### Anotações ####
-- Importar Templates: Escolher as regras "Template groups" e "Templates" para as opções "Update existing" e "Create new".
-- Importar Hosts: Escolher as regras "Host groups" e "Hosts" para as opções "Update existing" e "Create new".
+Template 10: Sua importação não funcionou pois retornava a mensage de erro "Graph "Interface {#IFNAME}({#IFALIAS}): Network traffic" already exists on "Template OS Windows by Zabbix agent" (items are not identical).". Foi identicado que existia o template "Windows by Zabbix agent", o mesmo foi deletado, assim possibilitando a importação do template da versão 5.
+
+Erro apresentado durante importação do Hosts_full: "Cannot inherit item with key "agent.hostname" of template "Template OS Linux" to host "Zabbix server", because an item with the same key is already inherited from template "Linux by Zabbix agent".". Foi precisdo deletar o template "Linux by Zabbix agent"
