@@ -1,5 +1,5 @@
 - Configurar no path /zabbix
-- Configurar nginx com upstream para não quebrar quando perder conexão com os locations
+- Configurar nginx com upstream para não quebrar quando perder conexão com os locations (OK)
 - Configurar comunicação dos Agents com o Server via Hostname e não IP
 - Coletar métricas do docker
 - Alterar configuração para Apache
