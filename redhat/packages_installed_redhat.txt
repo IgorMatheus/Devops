@@ -6,6 +6,8 @@ nvm list
 
 ### Apache Installation
 sudo dnf install httpd -y
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
 
 ### PHP Installation
 sudo dnf update -y
@@ -18,3 +20,11 @@ sudo dnf module reset php -y ### Em caso de já possuir outra versão instalada
 sudo dnf module enable php:remi-8.2 -y
 sudo dnf install php -y
 php -v
+
+### Composer Installation
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+sudo mv composer.phar /usr/local/bin/composer
