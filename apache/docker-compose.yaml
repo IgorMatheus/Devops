@@ -1,0 +1,12 @@
+version: '3.9'
+
+networks:
+  default:
+    name: proxy
+    external: true
+
+services:
+  proxy:
+    image: httpd:2.4.59-alpine
+    ports:
+      - "8080:80"

@@ -1,0 +1,17 @@
+version: '3.9'
+
+networks:
+  default:
+    name: proxy
+    external: true
+  
+services:
+  open:
+    image: openproject/openproject:14.1.1
+    environment:
+      OPENPROJECT_SECRET_KEY_BASE: 'secret'
+      OPENPROJECT_HOST__NAME: 'op.local:8080'
+      OPENPROJECT_HTTPS: 'false'
+      OPENPROJECT_DEFAULT__LANGUAGE: 'en'
+        #    ports:
+        #      - "8081:80"
