@@ -1,3 +1,28 @@
 Lista de Atividades pendentes:
  - Utilizando a imagem httpd:2.4.59-alpine é preciso permitir que utilize a metodologia de múltiplos sites (a2ensite), o que aparentemente, não vem configurado, concentando assim, toda configuração no httpd.conf.
  - Aprender a configuração do Alias: A configuração funcionou quando aplicado no 000-default.conf (Alias "/foo" "/var/www/teste"), porém ao utilizar a mesmo estrutura de configuração em um novo site (teste.conf) era retornado erro 404 quando realizado o "curl http://localhost/teste".
+- Testar a config de Proxy Reverso utilizando o Location. Exemplo de config:
+         <VirtualHost *:80>
+         
+             ServerAdmin hostmaster@example.com
+             ProxyRequests off
+             DocumentRoot /var/www
+             ProxyPreserveHost On
+         
+             ServerName example.com
+             ServerAlias www.example.com
+         
+             ErrorLog ${APACHE_LOG_DIR}/error.log
+             CustomLog ${APACHE_LOG_DIR}/access.log combined
+         
+             # Alguns possíveis valores: debug, info, notice, warn, error, crit,
+             # alert, emerg.
+             LogLevel error
+         
+             <Location />
+                 ProxyPass http://internal.example.com:8444/
+                 ProxyPassReverse http://internal.example.com:8444/
+                 Order allow,deny
+                 Allow from all
+             </Location>
+         </VirtualHost>
