@@ -9,4 +9,9 @@ services:
   proxy:
     image: httpd:2.4.59-alpine
     ports:
-      - "8080:80"
+      - "81:80"
+  ubuntu:
+    image: proxy:01
+#    command: ['sh', '-c', 'sleep infinity']
+    ports:
+      - "80:80"

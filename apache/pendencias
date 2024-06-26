@@ -1,0 +1,3 @@
+Lista de Atividades pendentes:
+ - Utilizando a imagem httpd:2.4.59-alpine é preciso permitir que utilize a metodologia de múltiplos sites (a2ensite), o que aparentemente, não vem configurado, concentando assim, toda configuração no httpd.conf.
+ - Aprender a configuração do Alias: A configuração funcionou quando aplicado no 000-default.conf (Alias "/foo" "/var/www/teste"), porém ao utilizar a mesmo estrutura de configuração em um novo site (teste.conf) era retornado erro 404 quando realizado o "curl http://localhost/teste".

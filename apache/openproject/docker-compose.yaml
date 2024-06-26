@@ -13,5 +13,3 @@ services:
       OPENPROJECT_HOST__NAME: 'op.local:8080'
       OPENPROJECT_HTTPS: 'false'
       OPENPROJECT_DEFAULT__LANGUAGE: 'en'
-        #    ports:
-        #      - "8081:80"
