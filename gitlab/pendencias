@@ -1,0 +1,11 @@
+### LISTA DE PENDENCIAS
+
+- Configurar vários runners associados a uma so tag ou grupo (em validação)
+- Configurar compose do runner para iniciar já com o registro e token
+- Analisar erro no comando "gitlab-runner restart" dentro do container do runner
+- Configurar pipeline para exucutar em Merge Request (em validação)
+- Configurar Trigger na pipeline (em validação)
+- Configurar condition na pipeline
+- Analisar permissão de grupos/users
+- Crir Wiki
+- Analisar funcioamento do Roadmap

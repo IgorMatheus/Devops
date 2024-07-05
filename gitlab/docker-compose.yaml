@@ -1,18 +1,31 @@
 version: '3.9'
 
-#networks:
-#  default:
-#    name: apache_reverso
-#    external: true
+networks:
+  harbor:
+    name: harbor_harbor
+    external: false
+  gitlab:
+    name: gitlab_default
+    external: false
 
 services:
-  gitlab:
+  gitlab-local:
     image: gitlab/gitlab-ce:17.0.3-ce.0
 #    image: gitlab/gitlab-ce:17.1.1-ce.0
     ports:
       - "80:80" 
     environment:
-      GITLAB_OMNIBUS_CONFIG: "external_url 'http://localhost'"
+      GITLAB_OMNIBUS_CONFIG: "external_url 'http://gitlab-local'"
 
   runner:
     image: gitlab/gitlab-runner:alpine3.19
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+#    networks:
+#      - harbor
+#      - gitlab
+
+  runner2:
+    image: gitlab/gitlab-runner:alpine3.19
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
