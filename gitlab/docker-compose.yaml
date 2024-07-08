@@ -1,18 +1,19 @@
 version: '3.9'
 
 services:
-  gitlab-local:
+  gitlab:
     image: gitlab/gitlab-ce:17.0.3-ce.0
 #    image: gitlab/gitlab-ce:17.1.1-ce.0
     ports:
       - "80:80" 
     environment:
-      GITLAB_OMNIBUS_CONFIG: "external_url 'http://gitlab-local'"
+      GITLAB_OMNIBUS_CONFIG: "external_url 'http://hml.local'"
 
   runner:
     image: gitlab/gitlab-runner:alpine3.19
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/home/igor/projetos:/app/projetos"
 
   runner2:
     image: gitlab/gitlab-runner:alpine3.19
