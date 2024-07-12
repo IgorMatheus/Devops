@@ -6,6 +6,7 @@ services:
 #    image: gitlab/gitlab-ce:17.1.1-ce.0
     ports:
       - "80:80" 
+      - "5000:5000" 
     environment:
       GITLAB_OMNIBUS_CONFIG: "external_url 'http://hml.local'"
 
@@ -17,5 +18,18 @@ services:
 
   runner2:
     image: gitlab/gitlab-runner:alpine3.19
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+  
+  dind:
+    image: docker:latest
+#    command: ["--tls=false", "--insecure-registry=gitlab:5000"]
+    command: ['sh', '-c', 'sleep infinity']
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  ubuntu:
+    image: ubuntu:22.04
+    command: ['sh', '-c', 'sleep infinity']
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"

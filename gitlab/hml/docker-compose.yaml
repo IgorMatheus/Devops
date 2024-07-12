@@ -1,0 +1,11 @@
+networks:
+  default:
+    name: hml
+    external: true
+
+services:
+  hml:
+    image: gitlab/gitlab-runner:alpine3.19
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/home/igor/projetos:/app/projetos"
