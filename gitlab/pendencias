@@ -12,7 +12,5 @@
 
 
 Considerações para segunda:
-- Com a configuração do DinD na mesma rede do GitLab-CE foi possível realizar login passando a porta 80 no final da URL.
-- A próxima etapa é realizar o teste de login no Runner fora da network do GitLab-CE. Esta configuração terá a tentativa de login via URL registry.gitlab.local. Provavelmente, o config.toml precisará mapear o Extra_host para o IP do WSL.
-- Para realizar o login automático é preciso pesquisar como mapear o Access Token no config.toml
-- Outro ajuste que precisa ser analisado é a configuração da porta no gitlab.rb. Acredito que tenha que ser passado a porta 80 em vez da 5005.
+- É possível bloquear o acesso do "docker login" através do password do usuário? Permitindo apenas o login com o uso do Access Token.
+- Configurar Container Registry pra ser acessível por URL

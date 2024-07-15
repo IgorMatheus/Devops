@@ -1,0 +1,58 @@
+stages:
+  - build
+  - deploy
+  - sonarqube
+
+variables:
+  IMAGE_NAME: '$CI_REGISTRY/$CI_PROJECT_ROOT_NAMESPACE/$CI_PROJECT_NAME'
+  IMAGE_TAG: '$CI_PIPELINE_ID'
+
+sonar:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /hml/
+  stage: sonarqube
+  tags:
+    - runner
+  script:
+    - echo "Teste de execução de job durante Merge Request."
+
+build_image:
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /hml/
+  stage: build
+  # allow_failure: true
+  tags:
+    - runner
+  image: docker:27.0.3-alpine3.20
+  before_script:
+    - printenv
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS $REGISTRY_URL
+  script:
+    - echo $IMAGE_NAME:$IMAGE_TAG
+    # - unset DOCKER_HOST
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG -f ci/Dockerfile .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+
+deploy_image:
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /hml/
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - hml
+  image: docker:27.0.3-alpine3.20
+  before_script:
+    - apk add envsubst
+    # - docker login -u $REGISTRY_USER -p $REGISTRY_PASS $REGISTRY_URL
+  script:
+    - export IMAGE_TAG_FRONT=$IMAGE_TAG
+    - cd /app/projetos/selo/
+    - envsubst < docker-compose-template.yml > docker-compose-production.yml
+    - docker compose -f docker-compose.yml -f docker-compose-production.yml up -d --force-recreate
+    
+# Anotações
+# Qual a diferença entre essas opções?
+# CI_COMMIT_REF_NAME=hml
+# CI_COMMIT_BRANCH=hml
+# CI_COMMIT_REF_SLUG=hml
